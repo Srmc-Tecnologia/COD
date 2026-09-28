@@ -14,7 +14,13 @@ except ImportError:
 
 
 ARQUIVO_JSON = r"\\servidor\D\Automacoes\associadosCOD.json"
-ARQUIVO_LOGO = "logo_cod.png"
+def caminho_recurso(nome_arquivo):
+    """Retorna o caminho de um arquivo embutido, funcionando tanto no .py quanto no .exe."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, nome_arquivo)
+
+
+ARQUIVO_LOGO = caminho_recurso("logo_cod.png")
 
 # --- Configuração do auto-update ---
 VERSAO_ATUAL = "1.0.0"
