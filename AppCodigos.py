@@ -23,7 +23,7 @@ def caminho_recurso(nome_arquivo):
 ARQUIVO_LOGO = caminho_recurso("logo_cod.png")
 
 # --- Configuração do auto-update ---
-VERSAO_ATUAL = "1.0.0"
+VERSAO_ATUAL = "1.0.1"
 
 # Troque SEU_USUARIO/SEU_REPO pelo caminho real do seu repositório no GitHub.
 # O arquivo version.json deve estar na raiz do branch "main".
