@@ -23,7 +23,7 @@ def caminho_recurso(nome_arquivo):
 ARQUIVO_LOGO = caminho_recurso("logo_cod.png")
 
 # --- Configuração do auto-update ---
-VERSAO_ATUAL = "1.0.1"
+VERSAO_ATUAL = "1.0.2"
 
 # Troque SEU_USUARIO/SEU_REPO pelo caminho real do seu repositório no GitHub.
 # O arquivo version.json deve estar na raiz do branch "main".
@@ -397,10 +397,24 @@ def baixar_e_aplicar_atualizacao(atualizacao):
     nome_exe_atual = os.path.basename(exe_atual)
     caminho_bat = os.path.join(pasta_atual, "atualizar.bat")
 
+    # Usa "ping" como pausa (o "timeout" falha quando não há console).
+    # PYINSTALLER_RESET_ENVIRONMENT faz o novo .exe extrair seus próprios arquivos
+    # em vez de tentar reaproveitar a pasta temporária do processo antigo.
     conteudo_bat = f"""@echo off
-timeout /t 2 /nobreak > NUL
-del "{exe_atual}"
+set PYINSTALLER_RESET_ENVIRONMENT=1
+set /a tentativas=0
+:aguardar
+ping 127.0.0.1 -n 2 > NUL
+del "{exe_atual}" > NUL 2>&1
+if exist "{exe_atual}" (
+    set /a tentativas+=1
+    if %tentativas% LSS 30 goto aguardar
+    start "" "{exe_atual}"
+    del "%~f0"
+    exit /b 1
+)
 ren "{exe_novo}" "{nome_exe_atual}"
+ping 127.0.0.1 -n 3 > NUL
 start "" "{exe_atual}"
 del "%~f0"
 """
@@ -408,7 +422,15 @@ del "%~f0"
     with open(caminho_bat, "w") as f:
         f.write(conteudo_bat)
 
-    subprocess.Popen([caminho_bat], shell=True)
+    ambiente = os.environ.copy()
+    ambiente["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+
+    subprocess.Popen(
+        ["cmd", "/c", caminho_bat],
+        env=ambiente,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        close_fds=True
+    )
     janela.destroy()
     sys.exit(0)
 
